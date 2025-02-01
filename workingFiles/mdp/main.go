@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"flag"
 	"fmt"
@@ -43,9 +44,8 @@ func main() {
 	tFname := flag.String("t", "", "Alternate template name")
 	flag.Parse()
 
-	if *filename == "" {
-		flag.Usage()
-		os.Exit(1)
+	if os.Getenv("MDP_TEMPLATE") != "" {
+		*tFname = os.Getenv("MDP_TEMPLATE")
 	}
 
 	if err := run(*filename, *tFname, os.Stdout, *skipPreview); err != nil {
@@ -86,9 +86,19 @@ func run(filename string, tFname string, out io.Writer, skipPreview bool) error 
 }
 
 func parseContent(iFname string, tFname string) ([]byte, error) {
-	input, err := ioutil.ReadFile(iFname)
-	if err != nil {
-		return nil, err
+	var input []byte
+	if iFname == "" {
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Split(bufio.ScanBytes)
+		for scanner.Scan() {
+			input = append(input, scanner.Bytes()...)
+		}
+	} else {
+		fBytes, err := ioutil.ReadFile(iFname)
+		if err != nil {
+			return nil, err
+		}
+		input = fBytes
 	}
 
 	output := blackfriday.Run(input)
