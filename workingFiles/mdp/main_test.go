@@ -14,12 +14,7 @@ const (
 )
 
 func TestParseContent(t *testing.T) {
-	input, err := ioutil.ReadFile(inputFile)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	result, err := parseContent(input, "")
+	result, err := parseContent(inputFile, "")
 	if err != nil {
 		t.Fatal(err)
 	}

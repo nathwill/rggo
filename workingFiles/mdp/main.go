@@ -21,6 +21,7 @@ const (
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="description" content="Preview of: {{.SourceFile}}">
     <title>{{.Title}}</title>
   </head>
   <body>
@@ -31,8 +32,9 @@ const (
 )
 
 type content struct {
-	Title string
-	Body  template.HTML
+	Title      string
+	Body       template.HTML
+	SourceFile string
 }
 
 func main() {
@@ -53,12 +55,7 @@ func main() {
 }
 
 func run(filename string, tFname string, out io.Writer, skipPreview bool) error {
-	input, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	htmlData, err := parseContent(input, tFname)
+	htmlData, err := parseContent(filename, tFname)
 	if err != nil {
 		return err
 	}
@@ -88,7 +85,12 @@ func run(filename string, tFname string, out io.Writer, skipPreview bool) error 
 	return preview(outName)
 }
 
-func parseContent(input []byte, tFname string) ([]byte, error) {
+func parseContent(iFname string, tFname string) ([]byte, error) {
+	input, err := ioutil.ReadFile(iFname)
+	if err != nil {
+		return nil, err
+	}
+
 	output := blackfriday.Run(input)
 	body := bluemonday.UGCPolicy().SanitizeBytes(output)
 
@@ -105,8 +107,9 @@ func parseContent(input []byte, tFname string) ([]byte, error) {
 	}
 
 	c := content{
-		Title: "Markdown Preview Tool",
-		Body:  template.HTML(body),
+		Title:      "Markdown Preview Tool",
+		Body:       template.HTML(body),
+		SourceFile: iFname,
 	}
 
 	var buffer bytes.Buffer
