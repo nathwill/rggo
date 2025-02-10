@@ -9,8 +9,19 @@ import (
 	"path/filepath"
 )
 
+type arrayFlag []string
+
+func (i *arrayFlag) String() string {
+	return fmt.Sprintf("%v", *i)
+}
+
+func (i *arrayFlag) Set(value string) error {
+	*i = append(*i, value)
+	return nil
+}
+
 type config struct {
-	ext     string
+	ext     arrayFlag
 	size    int64
 	list    bool
 	del     bool
@@ -19,10 +30,12 @@ type config struct {
 }
 
 func main() {
+	var ext arrayFlag
+
 	root := flag.String("root", ".", "Root directory to start walking in")
 	list := flag.Bool("list", false, "List files only")
 	del := flag.Bool("del", false, "Delete matched files")
-	ext := flag.String("ext", "", "File extension to filter for")
+	flag.Var(&ext, "", "File extensions to filter for")
 	size := flag.Int64("size", 0, "Minimum file size")
 	logFile := flag.String("log", "", "Log deletions to this file")
 	archive := flag.String("archive", "", "Archive directory")
@@ -42,7 +55,7 @@ func main() {
 	}
 
 	c := config{
-		ext:     *ext,
+		ext:     ext,
 		size:    *size,
 		list:    *list,
 		del:     *del,
@@ -65,8 +78,10 @@ func run(root string, out io.Writer, cfg config) error {
 				return err
 			}
 
-			if filterOut(path, cfg.ext, cfg.size, info) {
-				return nil
+			for _, e := range cfg.ext {
+				if filterOut(path, e, cfg.size, info) {
+					return nil
+				}
 			}
 
 			if cfg.list {

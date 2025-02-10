@@ -39,19 +39,19 @@ func TestRun(t *testing.T) {
 		expected string
 	}{
 		{name: "NoFilter", root: "testdata",
-			cfg:      config{ext: "", size: 0, list: true},
+			cfg:      config{ext: arrayFlag{""}, size: 0, list: true},
 			expected: "testdata/dir.log\ntestdata/dir2/script.sh\n"},
 		{name: "FilterExtensionMatch", root: "testdata",
-			cfg:      config{ext: ".log", size: 0, list: true},
+			cfg:      config{ext: arrayFlag{".log"}, size: 0, list: true},
 			expected: "testdata/dir.log\n"},
 		{name: "FilterExtensionSizeMatch", root: "testdata",
-			cfg:      config{ext: ".log", size: 10, list: true},
+			cfg:      config{ext: arrayFlag{".log"}, size: 10, list: true},
 			expected: "testdata/dir.log\n"},
 		{name: "FilterExtensionSizeNoMatch", root: "testdata",
-			cfg:      config{ext: ".log", size: 20, list: true},
+			cfg:      config{ext: arrayFlag{".log"}, size: 20, list: true},
 			expected: ""},
 		{name: "FilterExtensionNoMatch", root: "testdata",
-			cfg:      config{ext: ".gz", size: 0, list: true},
+			cfg:      config{ext: arrayFlag{".gz"}, size: 0, list: true},
 			expected: ""},
 	}
 
@@ -74,22 +74,22 @@ func TestRunDelExtension(t *testing.T) {
 	testCases := []struct {
 		name        string
 		cfg         config
-		extNoDelete string
+		extNoDelete arrayFlag
 		nDelete     int
 		nNoDelete   int
 		expected    string
 	}{
 		{name: "DeleteExtensionNoMatch",
-			cfg:         config{ext: ".log", del: true},
-			extNoDelete: ".gz", nDelete: 0, nNoDelete: 10,
+			cfg:         config{ext: arrayFlag{".log"}, del: true},
+			extNoDelete: arrayFlag{".gz"}, nDelete: 0, nNoDelete: 10,
 			expected: ""},
 		{name: "DeleteExtensionMatch",
-			cfg:         config{ext: ".log", del: true},
-			extNoDelete: "", nDelete: 10, nNoDelete: 0,
+			cfg:         config{ext: arrayFlag{".log"}, del: true},
+			extNoDelete: arrayFlag{""}, nDelete: 10, nNoDelete: 0,
 			expected: ""},
 		{name: "DeleteExtensionMixed",
-			cfg:         config{ext: ".log", del: true},
-			extNoDelete: ".gz", nDelete: 5, nNoDelete: 5,
+			cfg:         config{ext: arrayFlag{".log"}, del: true},
+			extNoDelete: arrayFlag{".gz"}, nDelete: 5, nNoDelete: 5,
 			expected: ""},
 	}
 
@@ -103,8 +103,8 @@ func TestRunDelExtension(t *testing.T) {
 			tc.cfg.wLog = &logBuffer
 
 			tempDir, cleanup := createTempDir(t, map[string]int{
-				tc.cfg.ext:     tc.nDelete,
-				tc.extNoDelete: tc.nNoDelete,
+				tc.cfg.ext[0]:     tc.nDelete,
+				tc.extNoDelete[0]: tc.nNoDelete,
 			})
 			defer cleanup()
 
@@ -141,19 +141,19 @@ func TestRunArchive(t *testing.T) {
 	testCases := []struct {
 		name         string
 		cfg          config
-		extNoArchive string
+		extNoArchive arrayFlag
 		nArchive     int
 		nNoArchive   int
 	}{
 		{name: "ArchiveExtensionNoMatch",
-			cfg:          config{ext: ".log"},
-			extNoArchive: ".gz", nArchive: 0, nNoArchive: 10},
+			cfg:          config{ext: arrayFlag{".log"}},
+			extNoArchive: arrayFlag{".gz"}, nArchive: 0, nNoArchive: 10},
 		{name: "ArchiveExtensionMatch",
-			cfg:          config{ext: ".log"},
-			extNoArchive: ".gz", nArchive: 10, nNoArchive: 0},
+			cfg:          config{ext: arrayFlag{".log"}},
+			extNoArchive: arrayFlag{".gz"}, nArchive: 10, nNoArchive: 0},
 		{name: "ArchiveExtensionMixed",
-			cfg:          config{ext: ".log"},
-			extNoArchive: ".gz", nArchive: 5, nNoArchive: 5},
+			cfg:          config{ext: arrayFlag{".log"}},
+			extNoArchive: arrayFlag{".gz"}, nArchive: 5, nNoArchive: 5},
 	}
 
 	for _, tc := range testCases {
@@ -161,8 +161,8 @@ func TestRunArchive(t *testing.T) {
 			var buffer bytes.Buffer
 
 			tempDir, cleanup := createTempDir(t, map[string]int{
-				tc.cfg.ext:      tc.nArchive,
-				tc.extNoArchive: tc.nNoArchive,
+				tc.cfg.ext[0]:      tc.nArchive,
+				tc.extNoArchive[0]: tc.nNoArchive,
 			})
 			defer cleanup()
 
